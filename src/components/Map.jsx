@@ -21,7 +21,7 @@ const Map = () => {
 
             const createMarker = (coordinates, mapInstance) => {
                 //TODO check if there is already a marker at these coordinates
-                const newMarker = new mapboxgl.Marker().setLngLat(coordinates).addTo(mapInstance);
+                const newMarker = new mapboxgl.Marker({draggable: true}).setLngLat(coordinates).addTo(mapInstance);
                 setMarkers([...markers, newMarker]);
             };
 

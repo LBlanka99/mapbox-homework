@@ -14,6 +14,9 @@ const Map = () => {
             zoom: 12.5,
         });
 
+        map.addControl(new mapboxgl.FullscreenControl({container: document.querySelector('body')}));
+        map.addControl(new mapboxgl.GeolocateControl());
+
         return () => map.remove();
     }, []);
 

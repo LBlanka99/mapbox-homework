@@ -11,3 +11,12 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.mapboxgl-ctrl-top-right {
+  margin-top: 10px;
+  margin-right: 10px;
+}
+
+.mapboxgl-ctrl-group {
+  margin-right: 20px !important;
+}

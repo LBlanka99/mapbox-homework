@@ -21,6 +21,7 @@
     color: #fff;
     padding: 10px;
     font-family: monospace;
+    font-size: 20px;
     z-index: 1;
     position: absolute;
     top: 0;
@@ -32,6 +33,7 @@
 .sidebar button {
     margin-right: 5px;
     margin-left: 5px;
+    margin-bottom: 5px;
 }
 
 button {
@@ -51,6 +53,12 @@ button {
 button:hover {
     background: linear-gradient(45deg, #6b63c4, #41c8da);
     transform: scale(1.05);
+}
+
+#modes button:focus {
+    box-shadow: 0 0 13px rgba(4, 23, 100, 0.9);
+    font-weight: bold;
+    background: #128ce1;
 }
 
 

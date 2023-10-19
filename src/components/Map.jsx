@@ -58,13 +58,10 @@ const Map = () => {
     }, []);
 
 
-    // create a function to make a directions request
-    async function getRoute(coords) {
+    async function getRoute(coords, mode) {
         if (markers.current.length < 2) return;
-        // make a directions request using cycling profile
-        // TODO: választható legyen: cycling/walking/driving
         const query = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/cycling/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+            `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             {method: 'GET'}
         );
         const json = await query.json();
@@ -81,12 +78,10 @@ const Map = () => {
                 coordinates: route
             }
         };
-        // if the route already exists on the map, we'll reset it using setData
+
         if (map.current.getSource('route')) {
             map.current.getSource('route').setData(geojson);
-        }
-        // otherwise, we'll make a new request
-        else {
+        } else {
             map.current.addLayer({
                 id: 'route',
                 type: 'line',
@@ -107,13 +102,13 @@ const Map = () => {
         }
     }
 
-    const planRoute = () => {
+    const planRoute = (mode) => {
         let coords = "";
         for (const marker of markers.current) {
             coords += marker.getLngLat().lng + ",";
             coords += marker.getLngLat().lat + ";";
         }
-        getRoute(coords.slice(0, -1));
+        getRoute(coords.slice(0, -1), mode);
     }
 
     const deleteMarkers = () => {
@@ -134,10 +129,15 @@ const Map = () => {
         <div>
             <div id={"map"}></div>
             <div className={"sidebar"}>
-                <button onClick={deleteMarkers}>Clear all markers</button>
-                <button onClick={planRoute}>Plan a route</button>
+                <div id={"modes"}>
+                    <button onClick={() => planRoute("walking")}>Plan by 🚶</button>
+                    <button onClick={() => planRoute("cycling")}>Plan by 🚴</button>
+                    <button onClick={() => planRoute("driving")}>Plan by 🚗</button>
+                    <button id={"clear-markers"} onClick={deleteMarkers}>Clear all markers</button>
+
+                </div>
                 {distance !== 0 ?
-                    <div id={"trip-infos"}>Trip duration: ${minutes} min(s) 🚴 <br/> Trip distance: ${distance} m</div>
+                    <div id={"trip-infos"}>Trip duration: {minutes} min(s)<br/> Trip distance: {distance} m</div>
                     : <div></div>
                 }
             </div>

@@ -6,13 +6,56 @@
 }
 
 #trip-infos {
-    position: absolute;
-    margin: 20px;
-    width: 20%;
-    height: 5%;
-    top: 0;
+    z-index: 1;
+    width: 100%;
+    height: fit-content;
+    top: 10%;
     bottom: 20%;
     padding: 20px;
-    background-color: #fff;
     font-family: sans-serif;
+    border-radius: 5px;
 }
+
+.sidebar {
+    background-color: rgba(47, 73, 107, 0.8);
+    color: #fff;
+    padding: 10px;
+    font-family: monospace;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 12px;
+    border-radius: 4px;
+}
+
+.sidebar button {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+button {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    background: linear-gradient(45deg, #41c8da, #6b63c4);
+    color: #ffffff;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.1s ease;
+}
+
+button:hover {
+    background: linear-gradient(45deg, #6b63c4, #41c8da);
+    transform: scale(1.05);
+}
+
+
+button:active {
+    box-shadow: 0 0 5px rgba(4, 23, 100, 0.9);
+}
+
+

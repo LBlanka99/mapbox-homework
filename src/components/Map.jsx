@@ -190,8 +190,6 @@ const Map = () => {
                     <button onClick={() => planRoute("walking")}>Plan by 🚶</button>
                     <button onClick={() => planRoute("cycling")}>Plan by 🚴</button>
                     <button onClick={() => planRoute("driving")}>Plan by 🚗</button>
-                    <button id={"clear-markers"} onClick={deleteMarkers}>Clear all markers</button>
-
                 </div>
                 {distance[0] !== 0 ?
                     <div id={"trip-infos"}>
@@ -200,6 +198,9 @@ const Map = () => {
                     </div>
                     : <div></div>
                 }
+            </div>
+            <div id={"clear-button"}>
+                <button onClick={deleteMarkers}>Clear all markers</button>
             </div>
             <div className="map-settings">
                 <h3>Map Settings</h3>

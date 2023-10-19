@@ -2,6 +2,8 @@ import "./Map.css";
 import {useEffect, useRef, useState} from "react";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
+import ErrorModal from "./ErrorModal";
+
 
 const Map = () => {
     const markers = useRef([]);
@@ -10,6 +12,7 @@ const Map = () => {
     const [distance, setDistance] = useState([0, "m"]);
     const [lineColor, setLineColor] = useState("#52358c");
     const [lineWidth, setLineWidth] = useState(5);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
 
     const map = useRef(null);
 
@@ -75,6 +78,16 @@ const Map = () => {
             {method: 'GET'}
         );
         const json = await query.json();
+        console.log(json);
+        if (json.routes?.length < 1 || json.routes === undefined) {
+            setIsErrorModalOpen(true);
+            if (map.current.getSource("route")) {
+                map.current.removeLayer("route");
+                map.current.removeSource("route");
+                setDistance([0, "m"]);
+            }
+            return;
+        }
         const data = json.routes[0];
         computeDetails(data);
         const route = data.geometry.coordinates;
@@ -145,7 +158,7 @@ const Map = () => {
         if (map.current.getSource("route")) {
             map.current.removeLayer("route");
             map.current.removeSource("route");
-            setDistance(0);
+            setDistance([0, "m"]);
         }
 
         markers.current = [];
@@ -193,7 +206,7 @@ const Map = () => {
                     <input type={"number"} value={lineWidth} min={1} max={30} onChange={(e) => setLineWidth(Number(e.target.value))}/>
                 </div>
             </div>
-
+            <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)}/>
         </div>
     );
 };

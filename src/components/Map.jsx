@@ -35,7 +35,7 @@ const Map = () => {
         map.current.addControl(new mapboxgl.FullscreenControl({container: document.querySelector("body")}), "bottom-right");
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
 
-        const createMarker = (coordinates, mapInstance) => {
+        const createMarker = (coordinates) => {
             //TODO check if there is already a marker at these coordinates
             const rotationDegree = Math.random() < 0.5 ? 10 : -10;
             const newMarker = new mapboxgl.Marker({
@@ -43,7 +43,7 @@ const Map = () => {
                 color: "orange",
                 rotation: rotationDegree
             }).setLngLat(coordinates)
-                .addTo(mapInstance);
+                .addTo(map.current);
             console.log(markers.current);
             markers.current = [...markers.current, newMarker];
         };
@@ -51,7 +51,7 @@ const Map = () => {
         const handleMapClick = (e) => {
             const lng = e.lngLat.lng;
             const lat = e.lngLat.lat;
-            createMarker([lng, lat], map.current);
+            createMarker([lng, lat]);
         }
 
         map.current.on("click", handleMapClick);
@@ -116,10 +116,25 @@ const Map = () => {
         getRoute(coords.slice(0, -1));
     }
 
+    const deleteMarkers = () => {
+        for (const marker of markers.current) {
+            marker.remove();
+        }
+
+        if (map.current.getSource("route")) {
+            map.current.removeLayer("route");
+            map.current.removeSource("route");
+            setDistance(0);
+        }
+
+        markers.current = [];
+    }
+
     return (
         <div>
             <div id={"map"}></div>
             <div className={"sidebar"}>
+                <button onClick={deleteMarkers}>Clear all markers</button>
                 <button onClick={planRoute}>Plan a route</button>
                 {distance !== 0 ?
                     <div id={"trip-infos"}>Trip duration: ${minutes} min(s) 🚴 <br/> Trip distance: ${distance} m</div>

@@ -39,7 +39,12 @@ const Map = () => {
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
 
         const createMarker = (coordinates) => {
-            //TODO check if there is already a marker at these coordinates
+            //check if there is already a marker at these coordinates
+            for (const marker of markers.current) {
+                if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
+                    return;
+                }
+            }
             const rotationDegree = Math.random() < 0.5 ? 10 : -10;
             const newMarker = new mapboxgl.Marker({
                 draggable: true,
@@ -47,7 +52,6 @@ const Map = () => {
                 rotation: rotationDegree
             }).setLngLat(coordinates)
                 .addTo(map.current);
-            console.log(markers.current);
             markers.current = [...markers.current, newMarker];
         };
 

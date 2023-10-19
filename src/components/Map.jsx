@@ -13,6 +13,7 @@ const Map = () => {
     const [lineColor, setLineColor] = useState("#52358c");
     const [lineWidth, setLineWidth] = useState(5);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("An error occurred.")
 
     const map = useRef(null);
 
@@ -45,6 +46,11 @@ const Map = () => {
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
 
         const createMarker = (coordinates) => {
+            if (markers.current.length >= 25) {
+                setErrorMessage("You can't put down more than 25 markers!");
+                setIsErrorModalOpen(true);
+                return;
+            }
             //check if there is already a marker at these coordinates
             for (const marker of markers.current) {
                 if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
@@ -78,8 +84,8 @@ const Map = () => {
             {method: 'GET'}
         );
         const json = await query.json();
-        console.log(json);
         if (json.routes?.length < 1 || json.routes === undefined) {
+            setErrorMessage("We couldn't find a route for your request.");
             setIsErrorModalOpen(true);
             if (map.current.getSource("route")) {
                 map.current.removeLayer("route");
@@ -206,7 +212,7 @@ const Map = () => {
                     <input type={"number"} value={lineWidth} min={1} max={30} onChange={(e) => setLineWidth(Number(e.target.value))}/>
                 </div>
             </div>
-            <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)}/>
+            <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)} message={errorMessage}/>
         </div>
     );
 };

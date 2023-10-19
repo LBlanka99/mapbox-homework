@@ -6,7 +6,8 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 const Map = () => {
     const markers = useRef([]);
     const [minutes, setMinutes] = useState(0);
-    const [distance, setDistance] = useState(0);
+    const [hours, setHours] = useState(0);
+    const [distance, setDistance] = useState([0, "m"]);
 
     const map = useRef(null);
 
@@ -66,9 +67,7 @@ const Map = () => {
         );
         const json = await query.json();
         const data = json.routes[0];
-        const time = Math.floor(data.duration / 60);
-        setMinutes(time);
-        setDistance(Math.round(data.distance));
+        computeDetails(data);
         const route = data.geometry.coordinates;
         const geojson = {
             type: 'Feature',
@@ -99,6 +98,24 @@ const Map = () => {
                     'line-opacity': 0.85
                 }
             });
+        }
+    }
+
+    const computeDetails = (data) => {
+        const time = Math.ceil(data.duration / 60);
+        if (time >= 60) {
+            setHours(Math.floor(time/60));
+            setMinutes(time % 60);
+        } else {
+            setMinutes(time);
+            setHours(0);
+        }
+
+        const meter = Math.round(data.distance);
+        if (meter >= 2000) {
+            setDistance([(meter/1000).toFixed(1), "km"]);
+        } else {
+            setDistance([meter, "m"]);
         }
     }
 
@@ -136,8 +153,11 @@ const Map = () => {
                     <button id={"clear-markers"} onClick={deleteMarkers}>Clear all markers</button>
 
                 </div>
-                {distance !== 0 ?
-                    <div id={"trip-infos"}>Trip duration: {minutes} min(s)<br/> Trip distance: {distance} m</div>
+                {distance[0] !== 0 ?
+                    <div id={"trip-infos"}>
+                        {hours > 0 ? `Trip duration: ${hours} hour(s) and ` : "Trip duration: "} {minutes} min(s)
+                        <br/> Trip distance: {distance[0]} {distance[1]}
+                    </div>
                     : <div></div>
                 }
             </div>

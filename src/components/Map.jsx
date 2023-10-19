@@ -8,6 +8,8 @@ const Map = () => {
     const [minutes, setMinutes] = useState(0);
     const [hours, setHours] = useState(0);
     const [distance, setDistance] = useState([0, "m"]);
+    const [lineColor, setLineColor] = useState("#52358c");
+    const [lineWidth, setLineWidth] = useState(5);
 
     const map = useRef(null);
 
@@ -93,8 +95,8 @@ const Map = () => {
                     'line-cap': 'round'
                 },
                 paint: {
-                    'line-color': '#52358c',
-                    'line-width': 5,
+                    'line-color': lineColor,
+                    'line-width': lineWidth,
                     'line-opacity': 0.85
                 }
             });
@@ -142,6 +144,18 @@ const Map = () => {
         markers.current = [];
     }
 
+    useEffect(() => {
+        if (map.current.getSource('route')) {
+            map.current.setPaintProperty("route", "line-color", lineColor);
+        }
+    }, [lineColor]);
+
+    useEffect(() => {
+        if (map.current.getSource('route')) {
+            map.current.setPaintProperty("route", "line-width", lineWidth);
+        }
+    }, [lineWidth]);
+
     return (
         <div>
             <div id={"map"}></div>
@@ -160,6 +174,17 @@ const Map = () => {
                     </div>
                     : <div></div>
                 }
+            </div>
+            <div className="map-settings">
+                <h3>Map Settings</h3>
+                <div className={"input-line"}>
+                    <span>Route line color: </span>
+                    <input type={"color"} value={lineColor} onChange={(e) => setLineColor(e.target.value)}/>
+                </div>
+                <div className={"input-line"}>
+                    <span>Route line width:</span>
+                    <input type={"number"} value={lineWidth} min={1} max={30} onChange={(e) => setLineWidth(Number(e.target.value))}/>
+                </div>
             </div>
 
         </div>

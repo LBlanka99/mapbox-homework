@@ -27,11 +27,14 @@ const Map = () => {
 
         const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
-            marker: {
-                color: "red"
-            },
             mapboxgl: mapboxgl,
         });
+
+        geocoder.on("result", (e) => {
+            const coordinates = e.result.center;
+            createMarker(coordinates);
+            geocoder.clear();
+        })
 
         map.current.addControl(geocoder, "top-right");
 

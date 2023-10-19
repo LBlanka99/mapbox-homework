@@ -5,6 +5,8 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
 const Map = () => {
     const [markers, setMarkers] = useState([]);
+    const [minutes, setMinutes] = useState(0);
+    const [distance, setDistance] = useState(0);
 
     useEffect(() => {
         mapboxgl.accessToken = "pk.eyJ1IjoiYmxhbmthOTkiLCJhIjoiY2xudmZ4ZHI3MHBtajJrb2p4cGJuN2FkZiJ9.F8-MFO-f6jbjFS1zhItYgA";
@@ -37,12 +39,16 @@ const Map = () => {
             // make a directions request using cycling profile
             // an arbitrary start will always be the same
             // only the end or destination will change
+            // a fetchben a cycling helyett lehet driving vagy walking
             const query = await fetch(
                 `https://api.mapbox.com/directions/v5/mapbox/cycling/${start[0]},${start[1]};${end[0]},${end[1]}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
                 {method: 'GET'}
             );
             const json = await query.json();
             const data = json.routes[0];
+            const time = Math.floor(data.duration / 60);
+            setMinutes(time);
+            setDistance(data.distance);
             const route = data.geometry.coordinates;
             const geojson = {
                 type: 'Feature',
@@ -142,7 +148,12 @@ const Map = () => {
     }, []);
 
     return (
-        <div id={"map"}></div>
+        <div>
+            <div id={"map"}></div>
+            {distance &&
+            <div id={"trip-infos"}>Trip duration: ${minutes} min(s) 🚴 <br/> Trip distance: ${distance} m</div>
+            }
+        </div>
     );
 };
 

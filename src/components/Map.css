@@ -4,3 +4,15 @@
     bottom: 0;
     width: 100%;
 }
+
+#trip-infos {
+    position: absolute;
+    margin: 20px;
+    width: 20%;
+    height: 5%;
+    top: 0;
+    bottom: 20%;
+    padding: 20px;
+    background-color: #fff;
+    font-family: sans-serif;
+}

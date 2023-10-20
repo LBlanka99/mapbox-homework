@@ -2,14 +2,20 @@ import "./Map.css";
 import {useEffect, useRef, useState} from "react";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
+import ErrorModal from "./ErrorModal";
+
 
 const Map = () => {
+    const maxAmountOfMarkers = 25;
     const markers = useRef([]);
     const [minutes, setMinutes] = useState(0);
     const [hours, setHours] = useState(0);
     const [distance, setDistance] = useState([0, "m"]);
     const [lineColor, setLineColor] = useState("#52358c");
     const [lineWidth, setLineWidth] = useState(5);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("An error occurred.");
+    const travelMode = useRef("cycling");
 
     const map = useRef(null);
 
@@ -27,47 +33,73 @@ const Map = () => {
 
         const geocoder = new MapboxGeocoder({
             accessToken: mapboxgl.accessToken,
-            marker: {
-                color: "red"
-            },
             mapboxgl: mapboxgl,
         });
 
-        map.current.addControl(geocoder, "top-right");
+        geocoder.on("result", (e) => {
+            const coordinates = e.result.center;
+            createMarker(coordinates);
+            geocoder.clear();
+        })
 
+        map.current.addControl(geocoder, "top-right");
         map.current.addControl(new mapboxgl.FullscreenControl({container: document.querySelector("body")}), "bottom-right");
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
-
-        const createMarker = (coordinates) => {
-            //TODO check if there is already a marker at these coordinates
-            const rotationDegree = Math.random() < 0.5 ? 10 : -10;
-            const newMarker = new mapboxgl.Marker({
-                draggable: true,
-                color: "orange",
-                rotation: rotationDegree
-            }).setLngLat(coordinates)
-                .addTo(map.current);
-            console.log(markers.current);
-            markers.current = [...markers.current, newMarker];
-        };
-
-        const handleMapClick = (e) => {
-            const lng = e.lngLat.lng;
-            const lat = e.lngLat.lat;
-            createMarker([lng, lat]);
-        }
 
         map.current.on("click", handleMapClick);
     }, []);
 
+    const createMarker = (coordinates) => {
+        if (markers.current.length >= maxAmountOfMarkers) {
+            setErrorMessage(`You can't put down more than ${maxAmountOfMarkers} markers!`);
+            setIsErrorModalOpen(true);
+            return;
+        }
 
-    async function getRoute(coords, mode) {
+        //check if there is already a marker at these coordinates
+        for (const marker of markers.current) {
+            if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
+                return;
+            }
+        }
+
+        const rotationDegree = Math.random() < 0.5 ? 10 : -10;
+        const newMarker = new mapboxgl.Marker({
+            draggable: true,
+            color: "orange",
+            rotation: rotationDegree
+        }).setLngLat(coordinates)
+            .addTo(map.current);
+
+        newMarker.on("dragend", () => {
+            if (map.current.getSource('route')) {
+                planRoute(travelMode.current);
+            }
+        });
+
+        markers.current = [...markers.current, newMarker];
+    };
+
+    const handleMapClick = (e) => {
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+        createMarker([lng, lat]);
+    }
+
+    async function getRoute(coords) {
         if (markers.current.length < 2) return;
+
         const query = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             {method: 'GET'}
         );
         const json = await query.json();
+        if (json.routes?.length < 1 || json.routes === undefined) {
+            setErrorMessage("We couldn't find a route for your request.");
+            setIsErrorModalOpen(true);
+            deleteRouteFromMap();
+            return;
+        }
         const data = json.routes[0];
         computeDetails(data);
         const route = data.geometry.coordinates;
@@ -103,10 +135,18 @@ const Map = () => {
         }
     }
 
+    const deleteRouteFromMap = () => {
+        if (map.current.getSource("route")) {
+            map.current.removeLayer("route");
+            map.current.removeSource("route");
+            setDistance([0, "m"]);
+        }
+    }
+
     const computeDetails = (data) => {
         const time = Math.ceil(data.duration / 60);
         if (time >= 60) {
-            setHours(Math.floor(time/60));
+            setHours(Math.floor(time / 60));
             setMinutes(time % 60);
         } else {
             setMinutes(time);
@@ -115,7 +155,7 @@ const Map = () => {
 
         const meter = Math.round(data.distance);
         if (meter >= 2000) {
-            setDistance([(meter/1000).toFixed(1), "km"]);
+            setDistance([(meter / 1000).toFixed(1), "km"]);
         } else {
             setDistance([meter, "m"]);
         }
@@ -127,20 +167,15 @@ const Map = () => {
             coords += marker.getLngLat().lng + ",";
             coords += marker.getLngLat().lat + ";";
         }
-        getRoute(coords.slice(0, -1), mode);
+        travelMode.current = mode;
+        getRoute(coords.slice(0, -1));
     }
 
     const deleteMarkers = () => {
         for (const marker of markers.current) {
             marker.remove();
         }
-
-        if (map.current.getSource("route")) {
-            map.current.removeLayer("route");
-            map.current.removeSource("route");
-            setDistance(0);
-        }
-
+        deleteRouteFromMap()
         markers.current = [];
     }
 
@@ -164,8 +199,6 @@ const Map = () => {
                     <button onClick={() => planRoute("walking")}>Plan by 🚶</button>
                     <button onClick={() => planRoute("cycling")}>Plan by 🚴</button>
                     <button onClick={() => planRoute("driving")}>Plan by 🚗</button>
-                    <button id={"clear-markers"} onClick={deleteMarkers}>Clear all markers</button>
-
                 </div>
                 {distance[0] !== 0 ?
                     <div id={"trip-infos"}>
@@ -175,6 +208,9 @@ const Map = () => {
                     : <div></div>
                 }
             </div>
+            <div id={"clear-button"}>
+                <button onClick={deleteMarkers}>Clear all markers</button>
+            </div>
             <div className="map-settings">
                 <h3>Map Settings</h3>
                 <div className={"input-line"}>
@@ -183,10 +219,11 @@ const Map = () => {
                 </div>
                 <div className={"input-line"}>
                     <span>Route line width:</span>
-                    <input type={"number"} value={lineWidth} min={1} max={30} onChange={(e) => setLineWidth(Number(e.target.value))}/>
+                    <input type={"number"} value={lineWidth} min={1} max={30}
+                           onChange={(e) => setLineWidth(Number(e.target.value))}/>
                 </div>
             </div>
-
+            <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)} message={errorMessage}/>
         </div>
     );
 };

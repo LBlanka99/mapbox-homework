@@ -1,70 +1,86 @@
-# Getting Started with Create React App
+# Mapbox Map Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<a name="readme-top"></a>
 
-## Available Scripts
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About the project</a>
+      <ul>
+        <li><a href="#features">Features</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#built-with">Built with</a>
+    </li>
+    <li>
+      <a href="#getting-started">Getting started</a>
+		 <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#how-to-start-the-project">How to start the project</a></li>
+     </ul>
+    </li>
+  </ol>
+</details>
 
-In the project directory, you can run:
+## About the project
+![About The Project Screenshot][screenshot]
+This is a simple web application that allows users to interact with a Mapbox map.
+The application lets users place markers on the map, plan routes between markers, and customize route appearance.
+The default map view centers on Veszprém, Hungary.
 
-### `npm start`
+### Features
+- **Interactive Map:** The application displays an interactive Mapbox map, allowing users to interact with it.
+- **Place Markers:** Users can click on the map to place markers. The application limits the number of markers to a maximum of 25.
+- **Plan Routes:** Users can plan routes between markers using the Mapbox Directions API. The following route information is displayed:
+  - Route geometry on the map
+  - Route distance and estimated travel time
+- **Searchable Geocoding:** A search feature is implemented to search for locations and add markers to the map using address searches.
+- **Customize Route Appearance:** Users can customize the appearance of the planned route by selecting a route line color and width.
+- **Error Handling:** The application handles errors and provides informative error messages to the user.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Built with
+* [![Mapbox][mapbox-gl.js]][mapbox-url]
+* [![JavaScript][js]][js-url]
+* [![React][react.js]][react-url]
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Getting started
+### Prerequisites
+- Node.js and npm installed on your machine.
 
-### `npm test`
+### How to start the project
+1. Clone the repository to your local machine:
+```sh
+git clone git@github.com:LBlanka99/mapbox-homework.git
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+2. Change to the project directory:
+```sh
+cd mapbox-map-app
+```
 
-### `npm run build`
+3. Install the required dependencies:
+```sh
+npm install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+4. Start the development server:
+```sh
+npm start
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The application should now be running locally at http://localhost:3000/. You can access it in your web browser.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+<!-- MARKDOWN LINKS & IMAGES -->
+[react.js]: https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB
+[react-url]: https://react.dev/
+[mapbox-gl.js]: https://img.shields.io/badge/Mapbox-000000.svg?style=for-the-badge&logo=Mapbox&logoColor=white
+[mapbox-url]: https://www.mapbox.com/
+[js]: https://img.shields.io/badge/JavaScript-F7DF1E.svg?style=for-the-badge&logo=JavaScript&logoColor=black
+[js-url]: https://www.javascript.com/
+[screenshot]: images/screenshot1.png

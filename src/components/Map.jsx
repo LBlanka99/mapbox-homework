@@ -6,6 +6,7 @@ import ErrorModal from "./ErrorModal";
 
 
 const Map = () => {
+    const maxAmountOfMarkers = 25;
     const markers = useRef([]);
     const [minutes, setMinutes] = useState(0);
     const [hours, setHours] = useState(0);
@@ -42,49 +43,52 @@ const Map = () => {
         })
 
         map.current.addControl(geocoder, "top-right");
-
         map.current.addControl(new mapboxgl.FullscreenControl({container: document.querySelector("body")}), "bottom-right");
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
-
-        const createMarker = (coordinates) => {
-            if (markers.current.length >= 25) {
-                setErrorMessage("You can't put down more than 25 markers!");
-                setIsErrorModalOpen(true);
-                return;
-            }
-            //check if there is already a marker at these coordinates
-            for (const marker of markers.current) {
-                if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
-                    return;
-                }
-            }
-            const rotationDegree = Math.random() < 0.5 ? 10 : -10;
-            const newMarker = new mapboxgl.Marker({
-                draggable: true,
-                color: "orange",
-                rotation: rotationDegree
-            }).setLngLat(coordinates)
-                .addTo(map.current);
-            newMarker.on("dragend", () => {
-                if (map.current.getSource('route')) {
-                    planRoute(travelMode.current);
-                }
-            });
-            markers.current = [...markers.current, newMarker];
-        };
-
-        const handleMapClick = (e) => {
-            const lng = e.lngLat.lng;
-            const lat = e.lngLat.lat;
-            createMarker([lng, lat]);
-        }
 
         map.current.on("click", handleMapClick);
     }, []);
 
+    const createMarker = (coordinates) => {
+        if (markers.current.length >= maxAmountOfMarkers) {
+            setErrorMessage(`You can't put down more than ${maxAmountOfMarkers} markers!`);
+            setIsErrorModalOpen(true);
+            return;
+        }
+
+        //check if there is already a marker at these coordinates
+        for (const marker of markers.current) {
+            if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
+                return;
+            }
+        }
+
+        const rotationDegree = Math.random() < 0.5 ? 10 : -10;
+        const newMarker = new mapboxgl.Marker({
+            draggable: true,
+            color: "orange",
+            rotation: rotationDegree
+        }).setLngLat(coordinates)
+            .addTo(map.current);
+
+        newMarker.on("dragend", () => {
+            if (map.current.getSource('route')) {
+                planRoute(travelMode.current);
+            }
+        });
+
+        markers.current = [...markers.current, newMarker];
+    };
+
+    const handleMapClick = (e) => {
+        const lng = e.lngLat.lng;
+        const lat = e.lngLat.lat;
+        createMarker([lng, lat]);
+    }
 
     async function getRoute(coords) {
         if (markers.current.length < 2) return;
+
         const query = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             {method: 'GET'}
@@ -93,11 +97,7 @@ const Map = () => {
         if (json.routes?.length < 1 || json.routes === undefined) {
             setErrorMessage("We couldn't find a route for your request.");
             setIsErrorModalOpen(true);
-            if (map.current.getSource("route")) {
-                map.current.removeLayer("route");
-                map.current.removeSource("route");
-                setDistance([0, "m"]);
-            }
+            deleteRouteFromMap();
             return;
         }
         const data = json.routes[0];
@@ -135,6 +135,14 @@ const Map = () => {
         }
     }
 
+    const deleteRouteFromMap = () => {
+        if (map.current.getSource("route")) {
+            map.current.removeLayer("route");
+            map.current.removeSource("route");
+            setDistance([0, "m"]);
+        }
+    }
+
     const computeDetails = (data) => {
         const time = Math.ceil(data.duration / 60);
         if (time >= 60) {
@@ -167,13 +175,7 @@ const Map = () => {
         for (const marker of markers.current) {
             marker.remove();
         }
-
-        if (map.current.getSource("route")) {
-            map.current.removeLayer("route");
-            map.current.removeSource("route");
-            setDistance([0, "m"]);
-        }
-
+        deleteRouteFromMap()
         markers.current = [];
     }
 

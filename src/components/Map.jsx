@@ -13,7 +13,8 @@ const Map = () => {
     const [lineColor, setLineColor] = useState("#52358c");
     const [lineWidth, setLineWidth] = useState(5);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("An error occurred.")
+    const [errorMessage, setErrorMessage] = useState("An error occurred.");
+    const travelMode = useRef("cycling");
 
     const map = useRef(null);
 
@@ -64,6 +65,11 @@ const Map = () => {
                 rotation: rotationDegree
             }).setLngLat(coordinates)
                 .addTo(map.current);
+            newMarker.on("dragend", () => {
+                if (map.current.getSource('route')) {
+                    planRoute(travelMode.current);
+                }
+            });
             markers.current = [...markers.current, newMarker];
         };
 
@@ -77,10 +83,10 @@ const Map = () => {
     }, []);
 
 
-    async function getRoute(coords, mode) {
+    async function getRoute(coords) {
         if (markers.current.length < 2) return;
         const query = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
+            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
             {method: 'GET'}
         );
         const json = await query.json();
@@ -132,7 +138,7 @@ const Map = () => {
     const computeDetails = (data) => {
         const time = Math.ceil(data.duration / 60);
         if (time >= 60) {
-            setHours(Math.floor(time/60));
+            setHours(Math.floor(time / 60));
             setMinutes(time % 60);
         } else {
             setMinutes(time);
@@ -141,7 +147,7 @@ const Map = () => {
 
         const meter = Math.round(data.distance);
         if (meter >= 2000) {
-            setDistance([(meter/1000).toFixed(1), "km"]);
+            setDistance([(meter / 1000).toFixed(1), "km"]);
         } else {
             setDistance([meter, "m"]);
         }
@@ -153,7 +159,8 @@ const Map = () => {
             coords += marker.getLngLat().lng + ",";
             coords += marker.getLngLat().lat + ";";
         }
-        getRoute(coords.slice(0, -1), mode);
+        travelMode.current = mode;
+        getRoute(coords.slice(0, -1));
     }
 
     const deleteMarkers = () => {
@@ -210,7 +217,8 @@ const Map = () => {
                 </div>
                 <div className={"input-line"}>
                     <span>Route line width:</span>
-                    <input type={"number"} value={lineWidth} min={1} max={30} onChange={(e) => setLineWidth(Number(e.target.value))}/>
+                    <input type={"number"} value={lineWidth} min={1} max={30}
+                           onChange={(e) => setLineWidth(Number(e.target.value))}/>
                 </div>
             </div>
             <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)} message={errorMessage}/>

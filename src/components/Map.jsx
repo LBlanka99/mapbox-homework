@@ -90,11 +90,10 @@ const Map = () => {
         if (markers.current.length < 2) return;
 
         const query = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
-            {method: 'GET'}
+            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`
         );
         const json = await query.json();
-        if (json.routes?.length < 1 || json.routes === undefined) {
+        if (json.routes === undefined || json.routes?.length < 1) {
             setErrorMessage("We couldn't find a route for your request.");
             setIsErrorModalOpen(true);
             deleteRouteFromMap();
@@ -103,6 +102,10 @@ const Map = () => {
         const data = json.routes[0];
         computeDetails(data);
         const route = data.geometry.coordinates;
+        drawRoute(route);
+    }
+
+    const drawRoute = (route) => {
         const geojson = {
             type: 'Feature',
             properties: {},

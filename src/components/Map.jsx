@@ -3,19 +3,18 @@ import {useEffect, useRef, useState} from "react";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import ErrorModal from "./ErrorModal";
+import Sidebar from "./Sidebar";
 
 
 const Map = () => {
     const maxAmountOfMarkers = 25;
     const markers = useRef([]);
-    const [minutes, setMinutes] = useState(0);
-    const [hours, setHours] = useState(0);
-    const [distance, setDistance] = useState([0, "m"]);
     const [lineColor, setLineColor] = useState("#52358c");
     const [lineWidth, setLineWidth] = useState(5);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState("An error occurred.");
     const travelMode = useRef("cycling");
+    const [travelData, setTravelData] = useState(null);
 
     const map = useRef(null);
 
@@ -99,7 +98,7 @@ const Map = () => {
             return;
         }
         const data = json.routes[0];
-        computeDetails(data);
+        setTravelData(data);
         const route = data.geometry.coordinates;
         drawRoute(route);
     }
@@ -141,25 +140,7 @@ const Map = () => {
         if (map.current.getSource("route")) {
             map.current.removeLayer("route");
             map.current.removeSource("route");
-            setDistance([0, "m"]);
-        }
-    }
-
-    const computeDetails = (data) => {
-        const time = Math.ceil(data.duration / 60);
-        if (time >= 60) {
-            setHours(Math.floor(time / 60));
-            setMinutes(time % 60);
-        } else {
-            setMinutes(time);
-            setHours(0);
-        }
-
-        const meter = Math.round(data.distance);
-        if (meter >= 2000) {
-            setDistance([(meter / 1000).toFixed(1), "km"]);
-        } else {
-            setDistance([meter, "m"]);
+            setTravelData(null);
         }
     }
 
@@ -196,23 +177,7 @@ const Map = () => {
     return (
         <div>
             <div id={"map"}></div>
-            <div className={"sidebar"}>
-                <div id={"modes"}>
-                    <button onClick={() => planRoute("walking")}>Plan by 🚶</button>
-                    <button onClick={() => planRoute("cycling")}>Plan by 🚴</button>
-                    <button onClick={() => planRoute("driving")}>Plan by 🚗</button>
-                </div>
-                {distance[0] !== 0 ?
-                    <div id={"trip-infos"}>
-                        {hours > 0 ? `Trip duration: ${hours} hour(s) and ` : "Trip duration: "} {minutes} min(s)
-                        <br/> Trip distance: {distance[0]} {distance[1]}
-                    </div>
-                    : <div></div>
-                }
-            </div>
-            <div id={"clear-button"}>
-                <button onClick={deleteMarkers}>Clear all markers</button>
-            </div>
+            <Sidebar travelData={travelData} planRoute={planRoute} deleteMarkers={deleteMarkers} />
             <div className="map-settings">
                 <h3>Map Settings</h3>
                 <div className={"input-line"}>

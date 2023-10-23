@@ -45,6 +45,7 @@ const Map = () => {
             mapboxgl: mapboxgl,
         });
 
+        //remove the marker placed by the geocoder by default (by emptying the search field), and place my own instead
         geocoder.on("result", (e) => {
             const coordinates = e.result.center;
             createMarker(coordinates);
@@ -55,6 +56,7 @@ const Map = () => {
         map.current.addControl(new mapboxgl.FullscreenControl({container: document.querySelector("body")}), "bottom-right");
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
 
+        //place markers on click
         map.current.on("click", handleMapClick);
     }, []);
 
@@ -80,6 +82,7 @@ const Map = () => {
         }).setLngLat(coordinates)
             .addTo(map.current);
 
+        //draw again the route (if any) on dragging a marker
         newMarker.on("dragend", () => {
             if (map.current.getSource('route')) {
                 planRoute(travelMode.current);
@@ -162,6 +165,7 @@ const Map = () => {
             coords += marker.getLngLat().lat + ";";
         }
         travelMode.current = mode;
+        // Remove the trailing semicolon at the end of the 'coords' string before passing it to the "getRoute" function
         getRoute(coords.slice(0, -1));
     }
 

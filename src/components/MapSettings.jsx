@@ -1,5 +1,6 @@
 import "./MapSettings.css";
 import {useEffect} from "react";
+import {MAX_ROUTE_LINE_WIDTH, MIN_ROUTE_LINE_WIDTH} from "../config";
 
 const MapSettings = ({map, lineColor, setLineColor, lineWidth, setLineWidth}) => {
 
@@ -25,7 +26,7 @@ const MapSettings = ({map, lineColor, setLineColor, lineWidth, setLineWidth}) =>
             </div>
             <div className={"input-line"}>
                 <span>Route line width:</span>
-                <input type={"number"} value={lineWidth} min={1} max={30} name={"line-width"}
+                <input type={"number"} value={lineWidth} min={MIN_ROUTE_LINE_WIDTH} max={MAX_ROUTE_LINE_WIDTH} name={"line-width"}
                        onChange={(e) => setLineWidth(Number(e.target.value))}/>
             </div>
         </div>

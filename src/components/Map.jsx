@@ -5,13 +5,23 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import ErrorModal from "./ErrorModal";
 import Sidebar from "./Sidebar";
 import MapSettings from "./MapSettings";
+import {
+    COORDINATE_PRECISION,
+    DEFAULT_MAP_CENTER,
+    DEFAULT_MAP_ZOOM, DEFAULT_ROUTE_COLOR, DEFAULT_ROUTE_LINE_WIDTH,
+    MAPBOX_ACCESS_TOKEN,
+    MARKER_COLOR,
+    MAX_MARKERS, MIN_MARKERS_FOR_ROUTE,
+    ROTATION_DEGREE
+} from "../config";
+
 
 
 const Map = () => {
-    const maxAmountOfMarkers = 25;
+    const maxAmountOfMarkers = MAX_MARKERS;
     const markers = useRef([]);
-    const [lineColor, setLineColor] = useState("#52358c");
-    const [lineWidth, setLineWidth] = useState(5);
+    const [lineColor, setLineColor] = useState(DEFAULT_ROUTE_COLOR);
+    const [lineWidth, setLineWidth] = useState(DEFAULT_ROUTE_LINE_WIDTH);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState("An error occurred.");
     const travelMode = useRef("cycling");
@@ -19,15 +29,15 @@ const Map = () => {
 
     const map = useRef(null);
 
-    mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
     useEffect(() => {
         if (map.current) return;
         map.current = new mapboxgl.Map({
             container: "map",
             style: "mapbox://styles/mapbox/outdoors-v12",
-            center: [17.915, 47.093],
-            zoom: 12.5,
+            center: DEFAULT_MAP_CENTER,
+            zoom: DEFAULT_MAP_ZOOM,
         });
 
         const geocoder = new MapboxGeocoder({
@@ -57,15 +67,15 @@ const Map = () => {
 
         //check if there is already a marker at these coordinates
         for (const marker of markers.current) {
-            if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
+            if ((marker.getLngLat().lng.toFixed(COORDINATE_PRECISION) === coordinates[0].toFixed(COORDINATE_PRECISION)) && (marker.getLngLat().lat.toFixed(COORDINATE_PRECISION) === coordinates[1].toFixed(COORDINATE_PRECISION))) {
                 return;
             }
         }
 
-        const rotationDegree = Math.random() < 0.5 ? 10 : -10;
+        const rotationDegree = Math.random() < 0.5 ? ROTATION_DEGREE : -ROTATION_DEGREE;
         const newMarker = new mapboxgl.Marker({
             draggable: true,
-            color: "orange",
+            color: MARKER_COLOR,
             rotation: rotationDegree
         }).setLngLat(coordinates)
             .addTo(map.current);
@@ -86,7 +96,7 @@ const Map = () => {
     }
 
     async function getRoute(coords) {
-        if (markers.current.length < 2) return;
+        if (markers.current.length < MIN_MARKERS_FOR_ROUTE) return;
 
         const query = await fetch(
             `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`

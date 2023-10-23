@@ -20,11 +20,12 @@ const MapSettings = ({map, lineColor, setLineColor, lineWidth, setLineWidth}) =>
             <h3>Map Settings</h3>
             <div className={"input-line"}>
                 <span>Route line color: </span>
-                <input type={"color"} value={lineColor} onChange={(e) => setLineColor(e.target.value)}/>
+                <input type={"color"} value={lineColor} name={"line-color"}
+                       onChange={(e) => setLineColor(e.target.value)}/>
             </div>
             <div className={"input-line"}>
                 <span>Route line width:</span>
-                <input type={"number"} value={lineWidth} min={1} max={30}
+                <input type={"number"} value={lineWidth} min={1} max={30} name={"line-width"}
                        onChange={(e) => setLineWidth(Number(e.target.value))}/>
             </div>
         </div>

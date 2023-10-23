@@ -1,0 +1,40 @@
+.map-settings {
+    color: white;
+    position: absolute;
+    bottom: 40px;
+    left: 10px;
+    background-color: rgba(47, 73, 107, 0.9);
+    padding: 10px;
+    border: 1px solid rgba(4, 23, 100, 0.9);
+    border-radius: 5px;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.input-line {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    align-items: center;
+}
+
+.map-settings input[type="color"] {
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+
+}
+
+.map-settings input[type="number"] {
+    width: 30px;
+    padding: 5px;
+    margin-left: 10px;
+}
+
+h3 {
+    color: #ffffff;
+    margin: 0;
+    text-align: center;
+}

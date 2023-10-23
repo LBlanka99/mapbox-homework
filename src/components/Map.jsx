@@ -4,6 +4,7 @@ import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-load
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import ErrorModal from "./ErrorModal";
 import Sidebar from "./Sidebar";
+import MapSettings from "./MapSettings";
 
 
 const Map = () => {
@@ -162,35 +163,12 @@ const Map = () => {
         markers.current = [];
     }
 
-    useEffect(() => {
-        if (map.current.getSource('route')) {
-            map.current.setPaintProperty("route", "line-color", lineColor);
-        }
-    }, [lineColor]);
-
-    useEffect(() => {
-        if (map.current.getSource('route')) {
-            map.current.setPaintProperty("route", "line-width", lineWidth);
-        }
-    }, [lineWidth]);
-
     return (
         <div>
             <div id={"map"}></div>
             <Sidebar travelData={travelData} planRoute={planRoute} deleteMarkers={deleteMarkers} />
-            <div className="map-settings">
-                <h3>Map Settings</h3>
-                <div className={"input-line"}>
-                    <span>Route line color: </span>
-                    <input type={"color"} value={lineColor} onChange={(e) => setLineColor(e.target.value)}/>
-                </div>
-                <div className={"input-line"}>
-                    <span>Route line width:</span>
-                    <input type={"number"} value={lineWidth} min={1} max={30}
-                           onChange={(e) => setLineWidth(Number(e.target.value))}/>
-                </div>
-            </div>
             <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)} message={errorMessage}/>
+            <MapSettings map={map.current} lineColor={lineColor} setLineColor={setLineColor} lineWidth={lineWidth} setLineWidth={setLineWidth}/>
         </div>
     );
 };

@@ -1,0 +1,48 @@
+#trip-infos {
+    z-index: 1;
+    width: 100%;
+    height: fit-content;
+    top: 10%;
+    bottom: 20%;
+    padding: 20px;
+    font-family: sans-serif;
+    border-radius: 5px;
+}
+
+.travel-sidebar {
+    background-color: rgba(47, 73, 107, 0.8);
+    color: #fff;
+    border: 1px solid rgba(4, 23, 100, 0.9);
+    padding: 10px;
+    font-family: monospace;
+    font-size: 20px;
+    z-index: 1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 12px;
+    border-radius: 5px;
+}
+
+.travel-sidebar button {
+    margin-right: 5px;
+    margin-left: 5px;
+    margin-bottom: 5px;
+}
+
+#modes button:focus {
+    box-shadow: 0 0 13px rgba(4, 23, 100, 0.9);
+    font-weight: bold;
+    background: #128ce1;
+}
+
+#clear-button {
+    position: absolute;
+    bottom: 180px;
+    left: 10px;
+    background-color: rgba(47, 73, 107, 0.9);
+    padding: 12px 18px 12px 18px;
+    border: 1px solid rgba(4, 23, 100, 0.9);
+    border-radius: 5px;
+    z-index: 1;
+}

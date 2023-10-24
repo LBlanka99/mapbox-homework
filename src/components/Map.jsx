@@ -3,32 +3,41 @@ import {useEffect, useRef, useState} from "react";
 import mapboxgl from "!mapbox-gl"; // eslint-disable-line import/no-webpack-loader-syntax
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 import ErrorModal from "./ErrorModal";
+import Sidebar from "./Sidebar";
+import MapSettings from "./MapSettings";
+import {
+    COORDINATE_PRECISION,
+    DEFAULT_MAP_CENTER,
+    DEFAULT_MAP_ZOOM, DEFAULT_ROUTE_COLOR, DEFAULT_ROUTE_LINE_WIDTH,
+    MAPBOX_ACCESS_TOKEN,
+    MARKER_COLOR,
+    MAX_MARKERS, MIN_MARKERS_FOR_ROUTE,
+    ROTATION_DEGREE
+} from "../config";
+
 
 
 const Map = () => {
-    const maxAmountOfMarkers = 25;
+    const maxAmountOfMarkers = MAX_MARKERS;
     const markers = useRef([]);
-    const [minutes, setMinutes] = useState(0);
-    const [hours, setHours] = useState(0);
-    const [distance, setDistance] = useState([0, "m"]);
-    const [lineColor, setLineColor] = useState("#52358c");
-    const [lineWidth, setLineWidth] = useState(5);
+    const [lineColor, setLineColor] = useState(DEFAULT_ROUTE_COLOR);
+    const [lineWidth, setLineWidth] = useState(DEFAULT_ROUTE_LINE_WIDTH);
     const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
     const [errorMessage, setErrorMessage] = useState("An error occurred.");
     const travelMode = useRef("cycling");
+    const [travelData, setTravelData] = useState(null);
 
     const map = useRef(null);
 
-
-    mapboxgl.accessToken = "pk.eyJ1IjoiYmxhbmthOTkiLCJhIjoiY2xudmZ4ZHI3MHBtajJrb2p4cGJuN2FkZiJ9.F8-MFO-f6jbjFS1zhItYgA";
+    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
     useEffect(() => {
         if (map.current) return;
         map.current = new mapboxgl.Map({
             container: "map",
             style: "mapbox://styles/mapbox/outdoors-v12",
-            center: [17.915, 47.093],
-            zoom: 12.5,
+            center: DEFAULT_MAP_CENTER,
+            zoom: DEFAULT_MAP_ZOOM,
         });
 
         const geocoder = new MapboxGeocoder({
@@ -36,6 +45,7 @@ const Map = () => {
             mapboxgl: mapboxgl,
         });
 
+        //remove the marker placed by the geocoder by default (by emptying the search field), and place my own instead
         geocoder.on("result", (e) => {
             const coordinates = e.result.center;
             createMarker(coordinates);
@@ -46,6 +56,7 @@ const Map = () => {
         map.current.addControl(new mapboxgl.FullscreenControl({container: document.querySelector("body")}), "bottom-right");
         map.current.addControl(new mapboxgl.GeolocateControl(), "bottom-right");
 
+        //place markers on click
         map.current.on("click", handleMapClick);
     }, []);
 
@@ -58,19 +69,20 @@ const Map = () => {
 
         //check if there is already a marker at these coordinates
         for (const marker of markers.current) {
-            if ((marker.getLngLat().lng.toFixed(4) === coordinates[0].toFixed(4)) && (marker.getLngLat().lat.toFixed(4) === coordinates[1].toFixed(4))) {
+            if ((marker.getLngLat().lng.toFixed(COORDINATE_PRECISION) === coordinates[0].toFixed(COORDINATE_PRECISION)) && (marker.getLngLat().lat.toFixed(COORDINATE_PRECISION) === coordinates[1].toFixed(COORDINATE_PRECISION))) {
                 return;
             }
         }
 
-        const rotationDegree = Math.random() < 0.5 ? 10 : -10;
+        const rotationDegree = Math.random() < 0.5 ? ROTATION_DEGREE : -ROTATION_DEGREE;
         const newMarker = new mapboxgl.Marker({
             draggable: true,
-            color: "orange",
+            color: MARKER_COLOR,
             rotation: rotationDegree
         }).setLngLat(coordinates)
             .addTo(map.current);
 
+        //draw again the route (if any) on dragging a marker
         newMarker.on("dragend", () => {
             if (map.current.getSource('route')) {
                 planRoute(travelMode.current);
@@ -87,22 +99,25 @@ const Map = () => {
     }
 
     async function getRoute(coords) {
-        if (markers.current.length < 2) return;
+        if (markers.current.length < MIN_MARKERS_FOR_ROUTE) return;
 
         const query = await fetch(
-            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`,
-            {method: 'GET'}
+            `https://api.mapbox.com/directions/v5/mapbox/${travelMode.current}/${coords}?steps=false&geometries=geojson&access_token=${mapboxgl.accessToken}`
         );
         const json = await query.json();
-        if (json.routes?.length < 1 || json.routes === undefined) {
+        if (json.routes === undefined || json.routes?.length < 1) {
             setErrorMessage("We couldn't find a route for your request.");
             setIsErrorModalOpen(true);
             deleteRouteFromMap();
             return;
         }
         const data = json.routes[0];
-        computeDetails(data);
+        setTravelData(data);
         const route = data.geometry.coordinates;
+        drawRoute(route);
+    }
+
+    const drawRoute = (route) => {
         const geojson = {
             type: 'Feature',
             properties: {},
@@ -139,25 +154,7 @@ const Map = () => {
         if (map.current.getSource("route")) {
             map.current.removeLayer("route");
             map.current.removeSource("route");
-            setDistance([0, "m"]);
-        }
-    }
-
-    const computeDetails = (data) => {
-        const time = Math.ceil(data.duration / 60);
-        if (time >= 60) {
-            setHours(Math.floor(time / 60));
-            setMinutes(time % 60);
-        } else {
-            setMinutes(time);
-            setHours(0);
-        }
-
-        const meter = Math.round(data.distance);
-        if (meter >= 2000) {
-            setDistance([(meter / 1000).toFixed(1), "km"]);
-        } else {
-            setDistance([meter, "m"]);
+            setTravelData(null);
         }
     }
 
@@ -168,6 +165,7 @@ const Map = () => {
             coords += marker.getLngLat().lat + ";";
         }
         travelMode.current = mode;
+        // Remove the trailing semicolon at the end of the 'coords' string before passing it to the "getRoute" function
         getRoute(coords.slice(0, -1));
     }
 
@@ -179,51 +177,12 @@ const Map = () => {
         markers.current = [];
     }
 
-    useEffect(() => {
-        if (map.current.getSource('route')) {
-            map.current.setPaintProperty("route", "line-color", lineColor);
-        }
-    }, [lineColor]);
-
-    useEffect(() => {
-        if (map.current.getSource('route')) {
-            map.current.setPaintProperty("route", "line-width", lineWidth);
-        }
-    }, [lineWidth]);
-
     return (
         <div>
             <div id={"map"}></div>
-            <div className={"sidebar"}>
-                <div id={"modes"}>
-                    <button onClick={() => planRoute("walking")}>Plan by 🚶</button>
-                    <button onClick={() => planRoute("cycling")}>Plan by 🚴</button>
-                    <button onClick={() => planRoute("driving")}>Plan by 🚗</button>
-                </div>
-                {distance[0] !== 0 ?
-                    <div id={"trip-infos"}>
-                        {hours > 0 ? `Trip duration: ${hours} hour(s) and ` : "Trip duration: "} {minutes} min(s)
-                        <br/> Trip distance: {distance[0]} {distance[1]}
-                    </div>
-                    : <div></div>
-                }
-            </div>
-            <div id={"clear-button"}>
-                <button onClick={deleteMarkers}>Clear all markers</button>
-            </div>
-            <div className="map-settings">
-                <h3>Map Settings</h3>
-                <div className={"input-line"}>
-                    <span>Route line color: </span>
-                    <input type={"color"} value={lineColor} onChange={(e) => setLineColor(e.target.value)}/>
-                </div>
-                <div className={"input-line"}>
-                    <span>Route line width:</span>
-                    <input type={"number"} value={lineWidth} min={1} max={30}
-                           onChange={(e) => setLineWidth(Number(e.target.value))}/>
-                </div>
-            </div>
+            <Sidebar travelData={travelData} planRoute={planRoute} deleteMarkers={deleteMarkers} />
             <ErrorModal isOpen={isErrorModalOpen} closeModal={() => setIsErrorModalOpen(false)} message={errorMessage}/>
+            <MapSettings map={map.current} lineColor={lineColor} setLineColor={setLineColor} lineWidth={lineWidth} setLineWidth={setLineWidth}/>
         </div>
     );
 };

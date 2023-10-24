@@ -5,38 +5,6 @@
     width: 100%;
 }
 
-#trip-infos {
-    z-index: 1;
-    width: 100%;
-    height: fit-content;
-    top: 10%;
-    bottom: 20%;
-    padding: 20px;
-    font-family: sans-serif;
-    border-radius: 5px;
-}
-
-.sidebar {
-    background-color: rgba(47, 73, 107, 0.8);
-    color: #fff;
-    border: 1px solid rgba(4, 23, 100, 0.9);
-    padding: 10px;
-    font-family: monospace;
-    font-size: 20px;
-    z-index: 1;
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin: 12px;
-    border-radius: 5px;
-}
-
-.sidebar button {
-    margin-right: 5px;
-    margin-left: 5px;
-    margin-bottom: 5px;
-}
-
 button {
     display: inline-block;
     padding: 10px 20px;
@@ -56,71 +24,6 @@ button:hover {
     transform: scale(1.05);
 }
 
-#modes button:focus {
-    box-shadow: 0 0 13px rgba(4, 23, 100, 0.9);
-    font-weight: bold;
-    background: #128ce1;
-}
-
-
 button:active {
     box-shadow: 0 0 5px rgba(4, 23, 100, 0.9);
 }
-
-.map-settings {
-    color: white;
-    position: absolute;
-    bottom: 40px;
-    left: 10px;
-    background-color: rgba(47, 73, 107, 0.9);
-    padding: 10px;
-    border: 1px solid rgba(4, 23, 100, 0.9);
-    border-radius: 5px;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.input-line {
-    display: flex;
-    justify-content: space-between;
-    flex-direction: row;
-    align-items: center;
-}
-
-
-.map-settings input[type="color"] {
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-
-}
-
-.map-settings input[type="number"] {
-    width: 30px;
-    padding: 5px;
-    margin-left: 10px;
-}
-
-h3 {
-    color: #ffffff;
-    margin: 0;
-    text-align: center;
-}
-
-
-
-#clear-button {
-    position: absolute;
-    bottom: 180px;
-    left: 10px;
-    background-color: rgba(47, 73, 107, 0.9);
-    padding: 12px 18px 12px 18px;
-    border: 1px solid rgba(4, 23, 100, 0.9);
-    border-radius: 5px;
-    z-index: 1;
-}
-
-
-
